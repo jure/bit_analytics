@@ -12,17 +12,18 @@ class BitAnalytics
     end
   end
 
-  #--- Events marking and deleting ---
   # Marks an event for hours, days, weeks and months.
-  # :param :event_name The name of the event, could be "active" or "new_signups"
-  # :param :uuid An unique id, typically user id. The id should not be huge, read Redis documentation why (bitmaps)
-  # :param :now Which date should be used as a reference point, default is `datetime.utcnow`
-  # :param :track_hourly Should hourly stats be tracked, defaults to bitanalytics.TRACK_HOURLY, but an be changed
-  # Examples:
+  #
+  # * +event_name+ - The name of the event, could be "active" or "new_signups"
+  # * +uuid+ - An unique id, typically user id. The id should not be huge, read Redis documentation why (bitmaps)
+  # * +now+ - Which date should be used as a reference point, default is `Time.now.getutc`
+  # * +track_hourly+ - Should hourly stats be tracked
+  #
+  # ==== Example
   # Mark id 1 as active
-  # mark_event('active', 1)
+  # @bit_analytics.mark_event('active', 1)
   # Mark task completed for id 252
-  # mark_event('tasks:completed', 252)
+  # @bit_analytics.mark_event('tasks:completed', 252)
   def mark_event(event_name, uuid, now: nil, track_hourly: nil)
     # Has memory applications
     track_hourly ||= false
@@ -116,11 +117,11 @@ class BitAnalytics
 
   #--- Events ---
 
-  # Extends with an obj.has_events_marked()
-  # that returns `True` if there are any events marked,
-  # otherwise `False` is returned.
+  # Extends with an obj.has_events_marked
+  # that returns truw if there are any events marked,
+  # otherwise false is returned.
 
-  # Extens also with a obj.delete()
+  # Extends also with a obj.delete
   # (useful for deleting temporary calculations).
 
   module MixinEventsMisc
@@ -132,8 +133,8 @@ class BitAnalytics
     end
   end
 
-  # Extends with an obj.get_count() that uses BITCOUNT to
-  # count all the events. Supports also __len__
+  # Extends with an obj.get_count that uses BITCOUNT to
+  # count all the events. Supports also length.
 
   module MixinCounts
     def get_count
@@ -146,8 +147,8 @@ class BitAnalytics
   end
 
   # Makes it possible to see if an uuid has been marked.
-  # Example: 
-  # user_active_today = 123 in DayEvents('active', 2012, 10, 23)
+  # ==== Example
+  # user_active_today = @bit_analytics.day_events('active', 2012, 10, 23).includes?(123)
   module MixinContains
     def includes?(uuid)
       if @redis.getbit(self.redis_key, uuid) == 1
@@ -166,8 +167,8 @@ end
 
 
 # Events for a month.
-# Example:
-# MonthEvents('active', 2012, 10)
+# ==== Example
+# @bit_analytics.month_events('active', 2012, 10)
 class MonthEvents < BitAnalytics
   include RedisConnection
   include MixinCounts
@@ -182,8 +183,8 @@ class MonthEvents < BitAnalytics
 end
 
 # Events for a week.
-# Example:
-# WeekEvents('active', 2012, 48)
+# ==== Example
+# @bit_analytics.week_events('active', 2012, 48)
 class WeekEvents < BitAnalytics
   include RedisConnection
   include MixinCounts
@@ -196,8 +197,8 @@ class WeekEvents < BitAnalytics
 end
 
 # Events for a day.
-# Example:
-# DayEvents('active', 2012, 10, 23)
+# ==== Example
+# @bit_analytics.day_events('active', 2012, 10, 23)
 class DayEvents < BitAnalytics
   include RedisConnection
   include MixinCounts
@@ -210,8 +211,8 @@ class DayEvents < BitAnalytics
 end
 
 # Events for a hour.
-# Example:
-# HourEvents('active', 2012, 10, 23, 13)
+# ==== Example
+# @bit_analytics.hour_events('active', 2012, 10, 23, 13)
 class HourEvents < BitAnalytics
   include RedisConnection
   include MixinCounts
@@ -224,22 +225,22 @@ class HourEvents < BitAnalytics
 end
 
 #--- Bit operations ---
+
 # Base class for bit operations (AND, OR, XOR).
 # Please note that each bit operation creates a new key prefixed with `bitanalytics_bitop_`.
 # These temporary keys can be deleted with `delete_temporary_bitop_keys`.
-
 # You can even nest bit operations.
-# Example:
-#     active_2_months = BitOpAnd(
-#         MonthEvents('active', last_month.year, last_month.month),
-#         MonthEvents('active', now.year, now.month)
+# ==== Example
+#     active_2_months = @bit_analytics.bit_op_and(
+#         @bit_analytics.month_events('active', last_month.year, last_month.month),
+#         @bit_analytics.month_events('active', now.year, now.month)
 #     )
-#     active_2_months = BitOpAnd(
-#         BitOpAnd(
-#             MonthEvents('active', last_month.year, last_month.month),
-#             MonthEvents('active', now.year, now.month)
+#     active_2_months = @bit_analytics.bit_op_and(
+#         @bit_analytics.bit_op_and(
+#             @bit_analytics.month_events('active', last_month.year, last_month.month),
+#             @bit_analytics.month_events('active', now.year, now.month)
 #         ),
-#         MonthEvents('active', now.year, now.month)
+#         @bit_analytics.month_events('active', now.year, now.month)
 #     )
 class BitOperation < BitAnalytics
   include MixinContains
