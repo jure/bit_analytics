@@ -1,5 +1,4 @@
-bit_analytics: a powerful analytics library for Redis for Ruby
-=================================================================
+# bit_analytics: a powerful analytics library for Redis for Ruby
 
 This Ruby gem (a port of [@amix's bitmapist library for Python](https://github.com/Doist/bitmapist)) makes it possible to implement real-time, highly scalable analytics that can answer following questions:
 
@@ -25,21 +24,18 @@ If you want to read more about bitmaps please read following:
 
 Requires Redis 2.6+.
 
-Installation
-============
+# Installation
 
-Can be installed very easily via:
-
+```
 $ gem install bit_analytics
+```
 
-Ports
-=====
+# Ports
 
 * Original Python library: https://github.com/Doist/bitmapist
 * PHP port: https://github.com/jeremyFreeAgent/Bitter
 
-Examples
-========
+# Examples
 
 Setting things up:
 
@@ -90,7 +86,7 @@ puts active_2_months.length
 active_2_months.includes?(123)
 ```
 
-Work with nested bit operations (imagine what you can do with this ;-))!
+Work with nested bit operations (imagine what you can do with this ;))!
 
 ```ruby
 active_2_months = @bit_analytics.bit_op_and(
