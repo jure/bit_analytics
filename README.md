@@ -54,8 +54,8 @@ last_month = (Date.today << 1).to_time
 Mark user 123 as active and has played a song:
 
 ```ruby
-@bit_anaytics.mark_event('active', 123)
-@bit_anaytics.mark_event('song:played', 123)
+@bit_analytics.mark_event('active', 123)
+@bit_analytics.mark_event('song:played', 123)
 ```
 
 Answer if user 123 has been active this month:
